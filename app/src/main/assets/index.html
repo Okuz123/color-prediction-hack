@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Prediction Hack</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #1a1a1a;
+            color: #00ff00;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .time-display {
+            font-size: 0.9em;
+            background: #333;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .input-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        input[type="number"] {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            background: #444;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+        input.invalid {
+            border-color: #ff0000;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button.reset {
+            background: #ff0000;
+            color: #fff;
+        }
+        #resultContainer {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #00ff00;
+        }
+        .color-red { color: #ff0000; }
+        .color-green { color: #00ff00; }
+    </style>
+</head>
+<body>
+    <h1>Color Prediction Hack</h1>
+    <div class="time-display" id="timeDisplay">Loading...</div>
+    <div class="input-group">
+        <input type="number" id="num1" min="0" max="9" placeholder="0">
+        <input type="number" id="num2" min="0" max="9" placeholder="0">
+        <input type="number" id="num3" min="0" max="9" placeholder="0">
+        <input type="number" id="num4" min="0" max="9" placeholder="0">
+        <input type="number" id="num5" min="0" max="9" placeholder="0">
+        <input type="number" id="num6" min="0" max="9" placeholder="0">
+        <input type="number" id="num7" min="0" max="9" placeholder="0">
+    </div>
+    <div class="input-group">
+        <button onclick="calculatePrediction()">Predict</button>
+        <button class="reset" onclick="resetInputs()">Reset</button>
+    </div>
+    <div id="resultContainer"></div>
+    <script>
+        // Update Oregon PDT time
+        function updateTimeDisplay() {
+            const now = new Date();
+            const pdtOffsetMinutes = -7 * 60; // UTC-7 (PDT)
+            const pdtTime = new Date(now.getTime() + (pdtOffsetMinutes * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+            const timeString = `Oregon Time (PDT): ${pdtTime.toLocaleString('en-US', { timeZone: 'UTC', hour12: true })}`;
+            document.getElementById("timeDisplay").textContent = timeString;
+            setTimeout(updateTimeDisplay, 1000);
+        }
+
+        // Reset inputs
+        function resetInputs() {
+            ['num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        // Matrix prediction
+        function matrixPrediction(nums) {
+            const sum = nums.reduce((a, b) => a + b, 0);
+            return sum % 10;
+        }
+
+        // Format prediction
+        function formatPrediction(number) {
+            const bigSmall = number <= 4 ? 'Small' : 'Big';
+            const color = number % 2 === 0 ? 'Green' : 'Red';
+            return { number, bigSmall, color };
+        }
+
+        // Calculate prediction
+        function calculatePrediction() {
+            const inputs = ['num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7'].map(id => {
+                const val = document.getElementById(id).value;
+                return val === '' ? 0 : parseInt(val);
+            });
+
+            // Validate inputs
+            if (inputs.some(num => isNaN(num) || num < 0 || num > 9)) {
+                document.querySelectorAll('input[type="number"]').forEach(input => {
+                    const val = parseInt(input.value);
+                    if (isNaN(val) || val < 0 || val > 9) input.classList.add('invalid');
+                });
+                return;
+            }
+
+            // Calculate prediction
+            const matrixPred = matrixPrediction(inputs);
+            const result = formatPrediction(matrixPred);
+
+            // Display result
+            const resultText = `
+                Your Numbers: ${inputs.join(', ')}<br>
+                Prediction:<br>
+                Number: ${result.number}<br>
+                Signal: ${result.bigSmall}<br>
+                Color: <span class="color-${result.color.toLowerCase()}">${result.color}</span>
+            `;
+            document.getElementById('resultContainer').innerHTML = resultText;
+        }
+
+        // Initialize
+        window.onload = () => {
+            updateTimeDisplay();
+        };
+    </script>
+</body>
+</html>
